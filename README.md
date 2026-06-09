@@ -2,7 +2,7 @@
 
 One-click Prometheus deploy. **No config files. No GitHub forks.** Just set env vars and go.
 
-[![Deploy on Railway]([![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/prometheus-grafana))
+([![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/prometheus-grafana)
 
 ---
 
