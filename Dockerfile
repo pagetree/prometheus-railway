@@ -7,4 +7,4 @@ RUN chmod +x /entrypoint.sh
 
 EXPOSE 9090
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
