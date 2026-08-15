@@ -44,7 +44,7 @@ Redeploy and Prometheus picks up the new targets.
 
 ## Pairing with Grafana
 
-Use the companion repo [grafana-railway](https://github.com/pagetree/grafana-railway) or the combined template above.
+Use the combined template above, or deploy Grafana beside this service in the same Railway project.
 
 On Grafana, set:
 
