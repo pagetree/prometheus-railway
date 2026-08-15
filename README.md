@@ -1,16 +1,18 @@
 # Prometheus for Railway
 
-One-click Prometheus deploy. **No config files. No GitHub forks.** Just set env vars and go.
+One-click Prometheus deploy. No config files. No GitHub forks. Set env vars and go.
 
 [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/prometheus-grafana)
+
+Full stack template: [Prometheus + Grafana](https://railway.com/deploy/prometheus-grafana)
 
 ---
 
 ## What this does
 
-Runs `prom/prometheus` with a config file **generated at startup from environment variables**. Self-scrapes by default — works immediately after deploy with zero configuration.
+Runs `prom/prometheus` with a config file generated at startup from environment variables. Self scrapes by default so it works immediately after deploy.
 
-Add your own services to scrape by setting a single env var.
+Add your own services to scrape with a single env var.
 
 ---
 
@@ -18,48 +20,62 @@ Add your own services to scrape by setting a single env var.
 
 | Variable | Default | Description |
 |---|---|---|
-| `SCRAPE_TARGETS` | _(empty)_ | Space-separated list of `label=host:port` targets to scrape |
+| `PORT` | `9090` | Keep this set to `9090` so private networking and Grafana wiring stay correct |
+| `SCRAPE_TARGETS` | _(empty)_ | Space separated list of `label=host:port` targets to scrape |
 | `SCRAPE_INTERVAL` | `15s` | How often Prometheus scrapes targets |
 | `EVALUATION_INTERVAL` | `15s` | How often rules are evaluated |
 | `RETENTION_TIME` | `15d` | How long to keep metrics data |
-| `PORT` | `9090` | Port to listen on (Railway sets this automatically) |
 
 ---
 
 ## Adding scrape targets
 
-Set `SCRAPE_TARGETS` in Railway's Variables tab:
+Set `SCRAPE_TARGETS` in Railway Variables:
 
 ```
 myapp=myapp.railway.internal:8080 worker=worker.railway.internal:3000
 ```
 
-Each `label=host:port` pair becomes a separate Prometheus scrape job. Use Railway's **private networking** hostnames (`.railway.internal`) so traffic stays internal.
+Each `label=host:port` pair becomes a separate scrape job. Prefer Railway private hostnames (`.railway.internal`).
 
-That's it. Redeploy and Prometheus picks up the new targets.
+Redeploy and Prometheus picks up the new targets.
 
 ---
 
 ## Pairing with Grafana
 
-Deploy the companion [Grafana Railway template](https://github.com/YOUR_ORG/grafana-railway) and set its `PROMETHEUS_URL` variable to:
+Use the companion repo [grafana-railway](https://github.com/pagetree/grafana-railway) or the combined template above.
+
+On Grafana, set:
 
 ```
-http://prometheus.railway.internal:9090
+PROMETHEUS_URL=http://${{prometheus-railway.RAILWAY_PRIVATE_DOMAIN}}:${{prometheus-railway.PORT}}
 ```
 
-Grafana will have Prometheus pre-wired as the default data source on first boot.
+That resolves to something like:
+
+```
+http://prometheus-railway.railway.internal:9090
+```
+
+Grafana provisions Prometheus as the default datasource on boot.
 
 ---
 
 ## Volumes
 
-Prometheus data is stored at `/prometheus`. Mount a Railway volume there to persist metrics across deploys.
+Store metrics under `/prometheus`. Attach a Railway volume at that path. Do not use a Dockerfile `VOLUME` instruction. Railway rejects those.
+
+---
+
+## Health check
+
+Railway health check path: `/-/healthy`
 
 ---
 
 ## What's pre-configured
 
-- Scrapes itself (`localhost:9090`) — visible immediately in Status → Targets
-- Accepts `$PORT` from Railway so the health check works out of the box
-- Minimal, readable entrypoint — inspect `entrypoint.sh` to see exactly what's generated
+- Self scrape on `localhost:$PORT`
+- Listens on `0.0.0.0:$PORT`
+- Config generated from env vars in `entrypoint.sh`
